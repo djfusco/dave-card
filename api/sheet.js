@@ -1,7 +1,4 @@
 import { google } from 'googleapis';
-///import { ajv } from 'ajv';
-
-console.log("hello world new");
 
 //json schema validator
 import Ajv from "ajv";
@@ -25,9 +22,8 @@ const data = {
 
 const validate = ajv.compile(schema)
 const valid = validate(data)
-console.log(valid);
-if (!valid) console.log(validate.errors)
-
+///console.log(valid);
+///if (!valid) console.log(validate.errors)
 
   //sample xapi statement
   var objectStatement = {
@@ -60,9 +56,6 @@ if (!valid) console.log(validate.errors)
 
 //Orig - good start here
 const auth = new google.auth.GoogleAuth();
-
-//remove this for production
-///import secretKey from './service_account_credentials.json';
 
 const secretKey = {
   "private_key": process.env.private_key.split(String.raw`\n`).join('\n'),

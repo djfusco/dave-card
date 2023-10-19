@@ -21,7 +21,7 @@ export class DaveCard extends LitElement {
 
   render() {
     return html`
-    <p>This is the ${this.version} code new.</p>
+    <p>This is the ${this.version} code.</p>
     `;
   }
 }
