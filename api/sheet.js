@@ -1,5 +1,7 @@
 import { google } from 'googleapis';
 
+console.log("hello world");
+
 //json schema validator
 import Ajv from "ajv";
 const ajv = new Ajv()
