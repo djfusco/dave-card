@@ -1,6 +1,31 @@
 import { google } from 'googleapis';
 
-console.log("hello world");
+//sample xapi statement
+const objectStatement = [{
+  "actor": {
+      "mbox": "mailto:dave@gmail.com",
+      "name": "Dave Fusco",
+      "objectType": "Agent"
+  },
+  "verb": {
+      "id": "http://adlnet.gov/expapi/verbs/answered",
+      "display": {
+          "en-US": "answered"
+      }
+  },
+  "object": {
+      "id": "http://adlnet.gov/expapi/activities/example",
+      "definition": {
+          "name": {
+              "en-US": "Example Activity"
+          },
+          "description": {
+              "en-US": "Example activity description"
+          }
+      },
+      "objectType": "Activity"
+  }
+}];
 
 //json schema validator
 import Ajv from "ajv";
@@ -17,46 +42,19 @@ const schema = {
 } 
 
 const data = {
-//  foo: 1,
-  foo: "1",
+  foo: 1,
+//  foo: "1",
   bar: "abc",
 }
 
 const validate = ajv.compile(schema)
 const valid = validate(data)
-///console.log(valid);
-///if (!valid) console.log(validate.errors)
-
-  //sample xapi statement
-  var objectStatement = {
-    "actor": {
-        "mbox": "mailto:dave@gmail.com",
-        "name": "Dave Fusco",
-        "objectType": "Agent"
-    },
-    "verb": {
-        "id": "http://adlnet.gov/expapi/verbs/answered",
-        "display": {
-            "en-US": "answered"
-        }
-    },
-    "object": {
-        "id": "http://adlnet.gov/expapi/activities/example",
-        "definition": {
-            "name": {
-                "en-US": "Example Activity"
-            },
-            "description": {
-                "en-US": "Example activity description"
-            }
-        },
-        "objectType": "Activity"
-    }
-  };
+console.log(valid);
+if (!valid) console.log(validate.errors)
 //end of json schema validator
 
 
-//Orig - good start here
+//Begin setting up Google sheet
 const auth = new google.auth.GoogleAuth();
 
 const secretKey = {
@@ -73,7 +71,7 @@ jwtClient.authorize(function (err, tokens) {
     console.log(err);
     return;
   } else {
-    //console.log("Successfully connected!");
+    console.log("Successfully connected!");
   }
  });
 
@@ -82,7 +80,7 @@ const sheets = google.sheets('v4');
 export default async function handler(req, res) {
   const search = req.query.search || '';
   let spreadsheetId = '1xjwk2jZZ02eISlckO7NDvNSf4LXPOgPI80OsqP30qtY';
-  
+
   if (search == "display") {
     let sheetRange = 'Sheet1!2:10';
     let results = [];
@@ -98,10 +96,6 @@ export default async function handler(req, res) {
       else {
         for (let row of response.data.values) {
           results.push({
-            ///"text": row[0],
-            ///"modelsrc": row[1],
-            ///"image": row[2],
-            ///"poster": row[3]
             "xAPIstatement": row[0],
           });
         }
@@ -115,22 +109,34 @@ export default async function handler(req, res) {
     });
   }
   else if (search == "insert") {
+    const flattenedData = objectStatement.map(obj => {
+      return [
+        obj.actor.mbox,
+        obj.actor.name,
+        obj.actor.objectType,
+        obj.verb.id,
+        obj.verb.display['en-US'],
+        obj.object.id,
+        obj.object.definition.name['en-US'],
+        obj.object.definition.description['en-US'],
+        obj.object.objectType
+      ];
+    });
+    
     sheets.spreadsheets.values.append({
       auth: jwtClient,
       spreadsheetId: spreadsheetId,
-      ///range: "Sheet1!A:B", 
       range: "Sheet1!A:B", 
-      valueInputOption: "USER_ENTERED", // The information will be passed according to what the usere passes in as date, number or text
+      valueInputOption: "USER_ENTERED",
       resource: {
-          ///values: [["Git followers tutorial", "Mia Roberts"]],
-          values: [[JSON.stringify(objectStatement)]],
+          values: flattenedData,
         },
     }, function (err, response) {
       if (err) {
           console.log('The API returned an error: ' + err);
       }
       else {
-        //placeholder
+          console.log('The API was successful');
       }
       res.setHeader('Cache-Control', 'max-age=0, s-maxage=1800');
       res.setHeader("Access-Control-Allow-Credentials", "true");
