@@ -21,7 +21,8 @@ export class DaveCard extends LitElement {
   }
 
   async _postxAPIStatement(e) {
-    const address = `http://localhost:3000/api/sheet?search=insert`;
+    //const address = `http://localhost:3000/api/sheet?search=insert`;
+    const address = `/api/sheet?search=insert`;
     const results = await fetch(address).then((response) => {
         if (response.ok) {
             return response.json()
