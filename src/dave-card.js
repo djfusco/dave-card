@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import "@lrnwebcomponents/multiple-choice/multiple-choice.js";
+import "@lrnwebcomponents/simple-icon/simple-icon.js";
 
 export class DaveCard extends LitElement {
   static properties = {
