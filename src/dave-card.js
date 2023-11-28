@@ -1,12 +1,12 @@
 import { LitElement, html, css } from 'lit';
 import "@lrnwebcomponents/multiple-choice/multiple-choice.js";
-import "@lrnwebcomponents/simple-icon/simple-icon.js";
 
 export class DaveCard extends LitElement {
-  static properties = {
-    version: {},
-  };
-
+  static get properties() {
+    return {
+      version: { type: String }
+    }
+  }
 
   static get styles() {
     return css`
@@ -18,38 +18,40 @@ export class DaveCard extends LitElement {
 
   constructor() {
     super();
-    this.version = 'STARTING';
+    this.version = null;
   }
 
   async _postxAPIStatement(e) {
-    //const address = `http://localhost:3000/api/sheet?search=insert`;
-    const address = `/api/sheet?search=insert`;
-    const results = await fetch(address).then((response) => {
-        if (response.ok) {
-            return response.json()
-        }
-        return [];
-    })
-    .then((data) => {
-        return data;
-    });
-    return results;
-}
-
-firstUpdated() {
-  const multChoice = this.shadowRoot.querySelector('#mc9');
-  if (multChoice) {
-    multChoice.addEventListener('click', async () => {
-      const results = await this._postxAPIStatement();
-      console.log(results); // Handle the results here
+    console.log(e.detail);
+    let base = ''; 
+    if (
+      window.location.origin.startsWith("http://127.0.0.1") ||
+      window.location.origin.startsWith("http://localhost")
+    ) {
+      base = window.location.origin
+        .replace(/127.0.0.1:8(.*)/, "localhost:3000")
+        .replace(/localhost:8(.*)/, "localhost:3000");
+    }
+    return await fetch(`${base}/api/sheet?search=insert`).then((r) => r.ok ? r.json() : []).then((data) => {
+      return data;
     });
   }
-}
-render() {
-  return html`
-    <multiple-choice id="mc9" correct-text="You got a meal deal" incorrect-text="You did not get a meal deal...." hide-title="" answers="[{&quot;label&quot;: &quot;Option 1&quot;, &quot;correct&quot;: true},{&quot;label&quot;: &quot;Option 2&quot;, &quot;correct&quot;: true},{&quot;label&quot;: &quot;Option 3&quot;, &quot;correct&quot;: true},{&quot;label&quot;: &quot;Option 4 is not right&quot;, &quot;correct&quot;: false}]"></multiple-choice>
-`;
-}
+
+  render() {
+    return html`
+      <multiple-choice
+        correct-text="You got a meal deal"
+        incorrect-text="You did not get a meal deal...."
+        hide-title
+        @user-engagement="${this._postxAPIStatement}"
+        >
+        <input type="checkbox" value="Option 1 - Correct answer" correct>
+        <input type="checkbox" value="Option 2">
+        <input type="checkbox" value="Option 3">
+        <input type="checkbox" value="Option 4">
+      </multiple-choice>
+    `;
+  }
 }
 
 customElements.define('dave-card', DaveCard);
